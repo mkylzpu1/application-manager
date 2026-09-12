@@ -66,21 +66,10 @@ def _list_jobs(owner_user_id: str, limit: int, next_token: str | None, status: s
 
     try:
         resp = table.query(**kwargs)
-    except Exception:
-        # GSI 未作成の場合は entityType='JOB' で Scan にフォールバック
-        from boto3.dynamodb.conditions import Attr
-        scan_kwargs: dict = {
-            "FilterExpression": Attr("entityType").eq("JOB") & Attr("ownerUserId").eq(owner_user_id),
-            "Limit": limit,
-        }
-        if status:
-            scan_kwargs["FilterExpression"] = (
-                scan_kwargs["FilterExpression"] & Attr("status").eq(status)
-            )
-        if start_key:
-            scan_kwargs["ExclusiveStartKey"] = start_key
-        resp = table.scan(**scan_kwargs)
-
+except Exception as exc:
+    print(f"ERROR list_my_jobs query: {exc}")
+    raise
+    
     items = resp.get("Items", [])
     last_key = resp.get("LastEvaluatedKey")
     out_token = _encode_next_token(last_key)

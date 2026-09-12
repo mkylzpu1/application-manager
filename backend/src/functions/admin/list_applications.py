@@ -71,16 +71,12 @@ def _list_items(
     if start_key:
         query_kwargs["ExclusiveStartKey"] = start_key
 
-    try:
-        resp = table.query(**query_kwargs)
-    except Exception:
-        scan_kwargs: dict = {
-            "Limit": limit,
-        }
-        if start_key:
-            scan_kwargs["ExclusiveStartKey"] = start_key
-        resp = table.scan(**scan_kwargs)
-
+try:
+    resp = table.query(**query_kwargs)
+except Exception as exc:
+    print(f"ERROR list_applications query: {exc}")
+    raise
+    
     items = resp.get("Items", [])
     items = [item for item in items if item.get("ownerUserId") == owner_user_id]
     if status:

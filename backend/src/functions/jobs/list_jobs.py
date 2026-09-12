@@ -96,7 +96,6 @@ def handler(event, context):
         print(f"ERROR list_jobs: {exc}")
         return create_response(500, {"message": "Failed to fetch jobs"})
 
-    items.sort(key=lambda x: x.get("createdAt", ""), reverse=True)
     out_token = _encode_next_token(last_key)
 
     body: dict = {"items": [_to_home_item(item) for item in items]}
